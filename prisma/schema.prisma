@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PartyType {
+  SUPPLIER
+  BUYER
+  EXPORTER
+}
+
+enum MatchType {
+  BUYER
+  EXPORTER
+}
+
+enum SyncSheetType {
+  SUPPLIERS
+  BUYERS
+  EXPORTERS
+}
+
+enum ComparisonMatchStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model SourceSupplier {
+  id              String   @id @default(cuid())
+  externalRowId   String   @unique
+  sourceUpdatedAt DateTime?
+  sheetName       String?
+  sheetRowNumber  Int?
+  name            String
+  price           Float
+  quality         Float
+  quantity        Float
+  location        String
+  materialType    String?
+  otherAttributes Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([name])
+  @@index([location])
+}
+
+model SourceBuyer {
+  id              String   @id @default(cuid())
+  externalRowId   String   @unique
+  sourceUpdatedAt DateTime?
+  sheetName       String?
+  sheetRowNumber  Int?
+  name            String
+  price           Float
+  quality         Float
+  quantity        Float
+  location        String
+  materialType    String?
+  otherAttributes Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([name])
+  @@index([location])
+}
+
+model SourceExporter {
+  id              String   @id @default(cuid())
+  externalRowId   String   @unique
+  sourceUpdatedAt DateTime?
+  sheetName       String?
+  sheetRowNumber  Int?
+  name            String
+  price           Float
+  quality         Float
+  quantity        Float
+  location        String
+  materialType    String?
+  otherAttributes Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([name])
+  @@index([location])
+}
+
+model Supplier {
+  id              String    @id @default(cuid())
+  externalRowId   String?   @unique
+  sourceUpdatedAt DateTime?
+  sheetName       String?
+  sheetRowNumber  Int?
+  name            String
+  price           Float
+  quality         Float
+  quantity        Float
+  location        String
+  materialType    String?
+  otherAttributes Json
+  isLocked        Boolean   @default(false)
+  lockedAt        DateTime?
+  hiddenAt        DateTime?
+  lockedByMatchId String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  matches         Match[]
+
+  @@index([name])
+  @@index([location])
+}
+
+model Buyer {
+  id              String    @id @default(cuid())
+  externalRowId   String?   @unique
+  sourceUpdatedAt DateTime?
+  sheetName       String?
+  sheetRowNumber  Int?
+  name            String
+  price           Float
+  quality         Float
+  quantity        Float
+  location        String
+  materialType    String?
+  otherAttributes Json
+  isLocked        Boolean   @default(false)
+  lockedAt        DateTime?
+  hiddenAt        DateTime?
+  lockedByMatchId String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([name])
+  @@index([location])
+}
+
+model Exporter {
+  id              String    @id @default(cuid())
+  externalRowId   String?   @unique
+  sourceUpdatedAt DateTime?
+  sheetName       String?
+  sheetRowNumber  Int?
+  name            String
+  price           Float
+  quality         Float
+  quantity        Float
+  location        String
+  materialType    String?
+  otherAttributes Json
+  isLocked        Boolean   @default(false)
+  lockedAt        DateTime?
+  hiddenAt        DateTime?
+  lockedByMatchId String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([name])
+  @@index([location])
+}
+
+model Match {
+  id              String    @id @default(cuid())
+  supplierId      String
+  matchedId       String
+  matchType       MatchType
+  matchScore      Float
+  matchedFields   Json
+  unmatchedFields Json
+  scoreBreakdown  Json
+  createdAt       DateTime  @default(now())
+  supplier        Supplier  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@unique([supplierId, matchedId, matchType])
+  @@index([supplierId, matchType, matchScore])
+}
+
+model SyncState {
+  id                String        @id @default(cuid())
+  sheetType         SyncSheetType @unique
+  lastProcessedRow  Int           @default(1)
+  lastProcessedAt   DateTime?
+  lastSourceVersion String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+model ComparisonMatch {
+  id              String    @id @default(cuid())
+  entityType      PartyType
+  sourceEntityType PartyType @default(SUPPLIER)
+  sourceRecordId  String
+  masterRecordId  String
+  sourceName      String
+  masterName      String
+  status          ComparisonMatchStatus @default(PENDING)
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+  matchScore      Float
+  matchedFields   Json
+  unmatchedFields Json
+  scoreBreakdown  Json
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([entityType, sourceEntityType, sourceRecordId])
+  @@index([entityType, sourceEntityType, sourceRecordId, matchScore])
+}
