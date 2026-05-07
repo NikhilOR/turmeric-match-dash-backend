@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "build": "nest build",
     "build:frontend": "npm --prefix frontend run build",
-    "start": "nest start",
+    "start": "node dist/src/main.js",
     "prestart:dev": "kill-port 3000",
     "start:dev": "tsc-watch --project tsconfig.build.json --onSuccess \"node dist/src/main.js\"",
     "start:prod": "node dist/src/main.js",
