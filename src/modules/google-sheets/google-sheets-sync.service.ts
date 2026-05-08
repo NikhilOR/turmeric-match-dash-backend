@@ -40,6 +40,18 @@ type ComparisonConfig = {
 
 const COMPARISON_CONFIGS: ComparisonConfig[] = [
   {
+    sourceSheetType: SyncSheetType.SUPPLIERS,
+    sourceEntityType: PartyType.SUPPLIER,
+    masterSheetType: SyncSheetType.BUYERS,
+    masterEntityType: PartyType.BUYER,
+  },
+  {
+    sourceSheetType: SyncSheetType.SUPPLIERS,
+    sourceEntityType: PartyType.SUPPLIER,
+    masterSheetType: SyncSheetType.EXPORTERS,
+    masterEntityType: PartyType.EXPORTER,
+  },
+  {
     sourceSheetType: SyncSheetType.BUYERS,
     sourceEntityType: PartyType.BUYER,
     masterSheetType: SyncSheetType.SUPPLIERS,
