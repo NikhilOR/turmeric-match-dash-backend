@@ -170,8 +170,9 @@ export class MatchesService {
     };
   }
 
-  async getSummary(query?: Pick<GetMatchesQueryDto, 'source_entity_type' | 'min_score' | 'matched_field'>) {
+  async getSummary(query?: Pick<GetMatchesQueryDto, 'match_type' | 'source_entity_type' | 'min_score' | 'matched_field'>) {
     const where: Prisma.ComparisonMatchWhereInput = {
+      entityType: query?.match_type,
       sourceEntityType: query?.source_entity_type,
       matchScore: query?.min_score ? { gte: query.min_score } : undefined,
       status: ComparisonMatchStatus.PENDING,

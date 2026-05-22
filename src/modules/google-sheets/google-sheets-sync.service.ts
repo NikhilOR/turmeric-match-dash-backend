@@ -51,18 +51,6 @@ const COMPARISON_CONFIGS: ComparisonConfig[] = [
     masterSheetType: SyncSheetType.EXPORTERS,
     masterEntityType: PartyType.EXPORTER,
   },
-  {
-    sourceSheetType: SyncSheetType.BUYERS,
-    sourceEntityType: PartyType.BUYER,
-    masterSheetType: SyncSheetType.SUPPLIERS,
-    masterEntityType: PartyType.SUPPLIER,
-  },
-  {
-    sourceSheetType: SyncSheetType.EXPORTERS,
-    sourceEntityType: PartyType.EXPORTER,
-    masterSheetType: SyncSheetType.SUPPLIERS,
-    masterEntityType: PartyType.SUPPLIER,
-  },
 ];
 
 @Injectable()
