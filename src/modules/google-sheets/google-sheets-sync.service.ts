@@ -114,6 +114,7 @@ export class GoogleSheetsSyncService implements OnModuleInit {
     }
 
     await this.syncCompletedMasterRows(config.masterEntityType);
+    await this.syncCompletedSourceRows(config.sourceEntityType);
 
     const [sourceRecords, masterRecords] = await Promise.all([
       this.getAllSourceRecords(config.sourceEntityType),
@@ -128,7 +129,11 @@ export class GoogleSheetsSyncService implements OnModuleInit {
       .filter((record) => !record.isLocked && !this.isCompletedRecord(record))
       .map((record) => this.toCandidate(record));
 
-    for (const sourceRecord of sourceRecords) {
+    const activeSourceRecords = sourceRecords.filter(
+      (record) => !this.isExcludedStatusRecord(record),
+    );
+
+    for (const sourceRecord of activeSourceRecords) {
       const hasApprovedMatch = await this.matchesService.hasApprovedMatch(
         config.masterEntityType,
         config.sourceEntityType,
@@ -374,6 +379,20 @@ export class GoogleSheetsSyncService implements OnModuleInit {
     );
   }
 
+  private async syncCompletedSourceRows(entityType: PartyType) {
+    const sourceRecords = await this.getAllSourceRecords(entityType);
+    const completedRows = sourceRecords.filter((record) => this.isExcludedStatusRecord(record));
+
+    if (!completedRows.length) {
+      return;
+    }
+
+    await this.matchesService.clearPendingMatchesForSourceRecords(
+      entityType,
+      completedRows.map((row) => row.id),
+    );
+  }
+
   private async lockCompletedMasterRecord(entityType: PartyType, id: string) {
     const data = {
       isLocked: true,
@@ -393,15 +412,21 @@ export class GoogleSheetsSyncService implements OnModuleInit {
   }
 
   private isCompletedRecord(record: ComparableRecord) {
+    return this.getStatus(record) === 'completed';
+  }
+
+  private isExcludedStatusRecord(record: ComparableRecord) {
+    return ['completed', 'processing'].includes(this.getStatus(record));
+  }
+
+  private getStatus(record: ComparableRecord) {
     const attributes = this.asObject(record.otherAttributes);
-    const status = normalizeString(
+    return normalizeString(
       attributes.Status ??
         attributes.status ??
         attributes['Interest level'] ??
         attributes['interest level'],
     );
-
-    return status === 'completed';
   }
 
   private asObject(value: Prisma.JsonValue): Record<string, unknown> {

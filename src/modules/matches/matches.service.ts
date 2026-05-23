@@ -122,6 +122,23 @@ export class MatchesService {
     });
   }
 
+  async clearPendingMatchesForSourceRecords(
+    sourceEntityType: PartyType,
+    sourceRecordIds: string[],
+  ) {
+    if (!sourceRecordIds.length) {
+      return;
+    }
+
+    await this.prisma.comparisonMatch.deleteMany({
+      where: {
+        sourceEntityType,
+        sourceRecordId: { in: sourceRecordIds },
+        status: ComparisonMatchStatus.PENDING,
+      },
+    });
+  }
+
   async findAll(query: GetMatchesQueryDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
